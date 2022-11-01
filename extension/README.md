@@ -8,4 +8,4 @@
 
 2. Chrome > Extensions > Load Unpacked > Select `build` folder
 
-This repo is set up with `crx-hotreload`, which means that as soon as files in the `build` directory are updated (with webpack), the Chrome page will reload itself.
+You will also need to set up `config.js`. See `config.example.js` for an example config

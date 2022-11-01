@@ -2,7 +2,6 @@ import { getLogger } from "./log";
 import { getCompleteCode } from "./completecode";
 import { CONFIG } from "./config";
 import { intervalToDuration } from "date-fns";
-import { KeyObject } from "crypto";
 
 window.onload = function () {
   let renderRegisteredPopup = function (result) {
@@ -13,19 +12,17 @@ window.onload = function () {
         start: result.install_time,
         end: Date.now(),
       });
-      const inRecontactPeriod =
-        sinceInstall.days >= CONFIG.recontactIntervalDays;
-      const days = CONFIG.recontactIntervalDays - sinceInstall.days;
-      let recontactHTML = `<p>Please keep this extension installed for the next ${days} days.`;
 
-      if (inRecontactPeriod) {
-        if (result.eligible) {
-          recontactHTML = `<p>Thank you and congratulations! You are eligible for a followup survey! Please click <b><a href=${CONFIG.recontactURL} target='_blank'>here</a></b> for the link to the final survey and a $${CONFIG.rewardDollars} reward!`;
-        } else {
-          recontactHTML = `<p>Thank you for your participation. You are now free to uninstall this extension at any time.`;
-        }
+      const studyFinished = sinceInstall.days >= CONFIG.studyLengthDays;
+      let studyProgressHTML;
+      if (studyFinished) {
+        studyProgressHTML = `<p>Thank you for your participation. You are now free to uninstall this extension at any time.`;
+      } else {
+        const days = CONFIG.studyLengthDays - sinceInstall.days;
+        studyProgressHTML = `<p>Please keep this extension installed for the next ${days} days.`;
       }
-      contentDiv.innerHTML += recontactHTML;
+
+      contentDiv.innerHTML += studyProgressHTML;
     }
   };
 
@@ -47,7 +44,7 @@ window.onload = function () {
 
       // validation
       if (!workerID) {
-        error("You must enter a worker ID");
+        error("You must enter a respondent ID");
         return;
       }
       const install_code = getCompleteCode(workerID);
@@ -79,7 +76,7 @@ window.onload = function () {
     });
 
   chrome.storage.sync.get(
-    ["workerID", "install_code", "install_time", "eligible"],
+    ["workerID", "install_code", "install_time"],
     function (result) {
       console.log("Default result is ", result);
       if (result.workerID) {
